@@ -1,8 +1,16 @@
 const express = require("express");
 const routes = express();
 const bodyParser = require("body-parser");
+const AWS = require("aws-sdk");
+const uuid = require("uuid");
 
 const router = express.Router();
+
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
+
+const params = {
+  TableName: process.env.DYNAMODB_TABLE
+};
 
 router
   .route("/todos")
@@ -10,7 +18,30 @@ router
     res.send("list");
   })
   .post(function create(req, res) {
-    res.send("create");
+    const timestamp = new Date().getTime();
+    const { text } = req.body;
+
+    if (typeof text !== "string") {
+      res.status(400).send({ error: "Couldn't create todo item." });
+    }
+
+    const Item = {
+      id: uuid.v1(),
+      text: text,
+      checked: false,
+      createAt: timestamp,
+      updateAt: timestamp
+    };
+
+    const createParam = Object.assign({}, params, { Item: Item });
+
+    dynamoDb.put(createParam, err => {
+      if (err) {
+        console.error(err);
+        res.status(400).send("Couldn't create todo item.");
+      }
+    });
+    res.send(createParam);
   });
 
 router
