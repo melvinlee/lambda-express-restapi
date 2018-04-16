@@ -7,20 +7,19 @@ const tableParams = {
   TableName: process.env.DYNAMODB_TABLE
 };
 
-const listItem = (req, res) => {
-  dynamoDb.scan(tableParams, (error, result) => {
-    if (error) {
-      console.error(error);
-      res
-        .statusCode(error.statusCode || 501)
-        .send({ error: "Couldn't fetch the todos." });
-    } else {
-      res.send(result.Items);
-    }
-  });
+const listItem = async (req, res) => {
+  try {
+    let result = await dynamoDb.scan(tableParams).promise();
+    res.send(result.Items);
+  } catch (error) {
+    console.error(error);
+    res
+      .statusCode(error.statusCode || 501)
+      .send({ error: "Couldn't fetch the todos." });
+  }
 };
 
-const createItem = (req, res) => {
+const createItem = async (req, res) => {
   const timestamp = new Date().getTime();
   const { text } = req.body;
 
@@ -28,7 +27,7 @@ const createItem = (req, res) => {
     res.status(400).send({ error: "Couldn't create todo item." });
   }
 
-  const Item = {
+  const item = {
     id: uuid.v1(),
     text: text,
     checked: false,
@@ -36,40 +35,39 @@ const createItem = (req, res) => {
     updateAt: timestamp
   };
 
-  const params = Object.assign({}, tableParams, { Item: Item });
+  const params = Object.assign({}, tableParams, { Item: item });
 
-  dynamoDb.put(params, error => {
-    if (error) {
-      console.error(error);
-      res.status(400).send("Couldn't create todo item.");
-    } else {
-      res.send(params);
-    }
-  });
+  try {
+    let result = await dynamoDb.put(params).promise();
+    res.send(item);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Couldn't create todo item.");
+  }
 };
 
-const getItem = (req, res) => {
+const getItem = async (req, res) => {
   const params = Object.assign({}, tableParams, {
     Key: {
       id: req.params.id
     }
   });
 
-  dynamoDb.get(params, (error, result) => {
-    if (error) {
-      console.error(error);
-      res.status(400).send({ error: "Could not get todo item" });
-    }
+  try {
+    let result = await dynamoDb.get(params).promise();
 
     if (result.Item) {
       res.json(result.Item);
     } else {
       res.status(400).send({ error: "Item not found" });
     }
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ error: "Could not get todo item" });
+  }
 };
 
-const editItem = (req, res) => {
+const editItem = async (req, res) => {
   const timestamp = new Date().getTime();
   const { text, checked } = req.body;
 
@@ -96,33 +94,31 @@ const editItem = (req, res) => {
     ReturnValues: "ALL_NEW"
   });
 
-  dynamoDb.update(params, (error, result) => {
-    if (error) {
-      console.error(error);
-      res
-        .status(error.statusCoee || 501)
-        .send({ error: "Could not update todo item" });
-    } else {
-      res.send(result.Attributes);
-    }
-  });
+  try {
+    let result = await dynamoDb.update(params).promise();
+    res.send(result.Attributes);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(error.statusCoee || 501)
+      .send({ error: "Could not update todo item" });
+  }
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = async (req, res) => {
   const params = Object.assign({}, tableParams, {
     Key: {
       id: req.params.id
     }
   });
 
-  dynamoDb.delete(params, error => {
-    if (error) {
-      console.error(error);
-      res.status(501).send({ error: "Could not delete toto item" });
-    } else {
-      res.status(204).send();
-    }
-  });
+  try {
+    await dynamoDb.delete(params).promise();
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(501).send({ error: "Could not delete toto item" });
+  }
 };
 
 module.exports = { listItem, createItem, getItem, editItem, deleteItem };
