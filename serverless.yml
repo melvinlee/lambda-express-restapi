@@ -20,6 +20,11 @@ provider:
         - { "Fn::GetAtt": ["TodosDynamoDbTable", "Arn" ] }
 
 functions:
+  app:
+    handler: todos/index.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
   create:
     handler: todos/index.handler
     events:
