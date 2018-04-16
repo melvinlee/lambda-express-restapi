@@ -8,7 +8,7 @@ const router = express.Router();
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-const params = {
+const tableParams = {
   TableName: process.env.DYNAMODB_TABLE
 };
 
@@ -33,15 +33,16 @@ router
       updateAt: timestamp
     };
 
-    const createParam = Object.assign({}, params, { Item: Item });
+    const params = Object.assign({}, tableParams, { Item: Item });
 
-    dynamoDb.put(createParam, err => {
-      if (err) {
-        console.error(err);
+    dynamoDb.put(params, error => {
+      if (error) {
+        console.error(error);
         res.status(400).send("Couldn't create todo item.");
+      } else {
+        res.send(params);
       }
     });
-    res.send(createParam);
   });
 
 router
