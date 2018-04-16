@@ -4,13 +4,13 @@ Demostrate how to use the popular Node web framework Express.js to deploy a Serv
 
 ## Getting Started
 
-We'll install the `serverless-http` framework
+Install the `serverless-http` framework
 
 ```sh 
 $ npm install --save express serverless-http
 ```
 
-The `serverless-http` package is a handy piece of middleware that handles the interface between your Node.js application and the specifics of API Gateway.
+The `serverless-http` package is a middleware that handles the interface between Node.js express application and the specifics of API Gateway.
 
 Let's create an index.js file that has our application code:
 
@@ -28,7 +28,7 @@ app.get('/', function (req, res) {
 module.exports.handler = serverless(app);
 ```
 
-To get this application deployed, let's create a `serverless.yml` in our working directory:
+To get this application deployed, let's create a `serverless.yml`
 
 ```yml
 # serverless.yml
@@ -41,6 +41,6 @@ functions:
       - http: 'ANY {proxy+}'
 ```
 
-This is a pretty basic configuration. We've created one function, app, which uses the exported handler from our index.js file. Finally, it's configured with some HTTP triggers.
+We've created one function, app, which uses the exported handler from our index.js file. Finally, it's configured with some HTTP triggers.
 
 We've used a very broad path matching so that all requests on this domain are routed to this function. All of the HTTP routing logic will be done inside the Express application.
