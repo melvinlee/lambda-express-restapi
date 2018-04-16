@@ -115,7 +115,21 @@ router
     });
   })
   .delete((req, res) => {
-    res.end("delete");
+    console.log(new Date().getTime());
+    const params = Object.assign({}, tableParams, {
+      Key: {
+        id: req.params.id
+      }
+    });
+
+    dynamoDb.delete(params, error => {
+      if (error) {
+        console.error(error);
+        res.status(501).send({ error: "Could not delete toto item" });
+      } else {
+        res.status(204).send();
+      }
+    });
   });
 
 routes.use(bodyParser.json({ strict: false }));
