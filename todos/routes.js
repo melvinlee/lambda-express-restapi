@@ -57,7 +57,24 @@ router
 router
   .route("/todos/:id")
   .get(function get(req, res) {
-    res.send("get");
+    const params = Object.assign({}, tableParams, {
+      Key: {
+        id: req.params.id
+      }
+    });
+
+    dynamoDb.get(params, (error, result) => {
+      if (error) {
+        console.error(error);
+        res.status(400).send({ error: "Could not get todo item" });
+      }
+
+      if (result.Item) {
+        res.json(result.Item);
+      } else {
+        res.status(400).send({ error: "Item not found" });
+      }
+    });
   })
   .put(function update(req, res) {
     res.send("update");
