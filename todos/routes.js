@@ -15,7 +15,16 @@ const tableParams = {
 router
   .route("/todos")
   .get(function list(req, res) {
-    res.send("list");
+    dynamoDb.scan(tableParams, (error, result) => {
+      if (error) {
+        console.error(error);
+        res
+          .statusCode(error.statusCode || 501)
+          .send({ error: "Couldn't fetch the todos." });
+      } else {
+        res.send(result.Items);
+      }
+    });
   })
   .post(function create(req, res) {
     const timestamp = new Date().getTime();
