@@ -77,7 +77,42 @@ router
     });
   })
   .put(function update(req, res) {
-    res.send("update");
+    const timestamp = new Date().getTime();
+    const { text, checked } = req.body;
+
+    // validation
+    if (typeof text !== "string" || typeof checked !== "boolean") {
+      console.error("Validation failed");
+      res.status(400).send({ error: "Validation failed" });
+    }
+
+    const params = Object.assign({}, tableParams, {
+      Key: {
+        id: req.params.id
+      },
+      ExpressionAttributeNames: {
+        "#todo_text": "text"
+      },
+      ExpressionAttributeValues: {
+        ":text": text,
+        ":checked": checked,
+        ":updatedAt": timestamp
+      },
+      UpdateExpression:
+        "SET #todo_text = :text, checked = :checked, updatedAt = :updatedAt",
+      ReturnValues: "ALL_NEW"
+    });
+
+    dynamoDb.update(params, (error, result) => {
+      if (error) {
+        console.error(error);
+        res
+          .status(error.statusCoee || 501)
+          .send({ error: "Could not update todo item" });
+      } else {
+        res.send(result.Attributes);
+      }
+    });
   })
   .delete((req, res) => {
     res.end("delete");
