@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/melvinlee/aws-lambda-express-restapi#readme",
   "dependencies": {
-    "aws-sdk": "^2.224.1",
+    "aws-sdk": "^2.814.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "serverless-http": "^1.5.5",
